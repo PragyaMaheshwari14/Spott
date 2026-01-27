@@ -1,19 +1,16 @@
 "use client";
 import { api } from "@/convex/_generated/api";
 import { useConvexMutation, useConvexQuery } from "@/hooks/use-convex-query";
-import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { City, State } from "country-state-city";
-import UpgradeModal from "@/components/upgrade-modal";
 import Image from "next/image";
 import { UnslpashImagePicker } from "@/components/unslpash-image-picker";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Crown, Loader2, Sparkles } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -34,7 +31,6 @@ import {
 import { CATEGORIES } from "@/lib/data";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
-
 
 //HH:MM in 24 hr
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -68,16 +64,10 @@ const CreateEvent = () => {
   const router = useRouter();
 
   const [showImagePicker, setShowImagePicker] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [upgradeReason, setUpgradeReason] = useState("limit"); // "limit" or "color"
-
-  // Check if user has Pro plan
-  const { has } = useAuth();
-  const hasPro = has?.({ plan: "pro" });
 
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
   const { mutate: createEvent, isLoading } = useConvexMutation(
-    api.events.createEvent
+    api.events.createEvent,
   );
 
   const {
@@ -122,84 +112,68 @@ const CreateEvent = () => {
   //Color presets = show all for Pro, only default for free
 
   const colorPresets = [
-    "#1e3a8a", //Default color (always avilable)
-    ...(hasPro ? ["#4c1d95", "#065f46", "#92400e", "#7f1d1d", "#831843"] : []),
+    "#1e3a8a",
+    "#4c1d95",
+    "#065f46",
+    "#92400e",
+    "#7f1d1d",
+    "#831843",
   ];
 
   const hadnleColorClick = (color) => {
-    // If not  default color and user doesn't habe Pro
-    if (color !== "#1e3a8a" && !hasPro) {
-      setUpgradeReason("color");
-      setShowUpgradeModal(true);
-      return;
-    }
     setValue("themeColor", color);
   };
 
   const combineDateTime = (date, time) => {
-    if(!date || !time) return null;
+    if (!date || !time) return null;
     const [hh, mm] = time.split(":").map(Number);
 
     const d = new Date(date);
     d.setHours(hh, mm, 0, 0);
     return d;
-  }
+  };
 
   const onSubmit = async (data) => {
     try {
       const start = combineDateTime(data.startDate, data.startTime);
       const end = combineDateTime(data.endDate, data.endTime);
 
-      if(!start || !end){
+      if (!start || !end) {
         toast.error("Please select both date and time for start and end");
         return;
       }
 
-      if(end.getTime() <= start.getTime()){
+      if (end.getTime() <= start.getTime()) {
         toast.error("End date/time must be after start date/time");
         return;
       }
 
-      //Check event limit for Free users
-      if(!hasPro && currentUser?.freeEventsCreated >= 1){
-        setUpgradeReason("limit");
-        setShowUpgradeModal(true);
-        return;
-      }
+      await createEvent({
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        tags: [data.category],
+        startDate: start.getTime(),
+        endDate: end.getTime(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        locationType: data.locationType,
+        venue: data.venue || undefined,
+        city: data.city,
+        state: data.state || undefined,
+        country: "India",
+        address: data.address || undefined,
 
-      if(data.themeColor !== "#1e3a8a" && !hasPro){
-        setUpgradeReason("color");
-        setShowUpgradeModal(true);
-        return;
-      } 
+        capacity: data.capacity,
+        ticketType: data.ticketType,
+        ticketPrice: data.ticketPrice || undefined,
+        coverImage: data.coverImage || undefined,
+        themeColor: data.themeColor,
+      });
 
-        await createEvent({
-          title: data.title,
-          description: data.description,
-          category: data.category,
-          tags: [data.category],
-          startDate: start.getTime(),
-          endDate: end.getTime(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          locationType: data.locationType,
-          venue: data.venue || undefined,
-          city: data.city,
-          state: data.state || undefined,
-          country: "India",
-          address: data.address || undefined,
-
-          capacity: data.capacity,
-          ticketType: data.ticketType,
-          ticketPrice: data.ticketPrice || undefined,
-          coverImage: data.coverImage || undefined,
-          themeColor: data.themeColor,
-        });
-
-        toast.success("Event created successfully!");
-        router.push("/my-events");
-      
+      toast.success("Event created successfully!");
+      router.push("/my-events");
     } catch (error) {
-        toast.error(error.message || "Failed to create event");
+      toast.error(error.message || "Failed to create event");
     }
   };
 
@@ -211,11 +185,6 @@ const CreateEvent = () => {
       <div className="max-w-6xl mx-auto flex flex-col gap-5 md:flex-row justify-between mb-10">
         <div>
           <h1 className="text-4xl font-bold">Create Event</h1>
-          {!hasPro && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Free: {currentUser?.freeEventCreated || 0}/1 events created
-            </p>
-          )}
         </div>
 
         {/* Ai Event Creator */}
@@ -248,12 +217,6 @@ const CreateEvent = () => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm">Theme Color</Label>
-              {!hasPro && (
-                <Badge variant="secondary" className="text-xs gap-1">
-                  <Crown className="w-3 h-3" />
-                  Pro
-                </Badge>
-              )}
             </div>
 
             <div className="flex gap-2 flex-wrap">
@@ -261,44 +224,15 @@ const CreateEvent = () => {
                 <button
                   key={color}
                   type="button"
-                  className={`w-10 h-10 rounded-full border-2 transition-all ${
-                    !hasPro && color !== "#1e3a8a"
-                      ? "opacity-40 cursor-not-allowed"
-                      : "hover:scale-110"
-                  }`}
+                  className="w-10 h-10 rounded-full border-2 hover:scale-110 transition-all"
                   style={{
                     backgroundColor: color,
                     borderColor: themeColor === color ? "white" : "transparent",
                   }}
                   onClick={() => hadnleColorClick(color)}
-                  title={
-                    !hasPro && color !== "#1e3a8a"
-                      ? "Upgrade to Pro for custom color"
-                      : ""
-                  }
                 />
               ))}
-
-              {!hasPro && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUpgradeReason("color");
-                    setShowUpgradeModal(true);
-                  }}
-                  className="w-10 h-10 rounded-full border-2 border-dashed border-purple-300 flex
-                  items-center justify-center hover:border-purple-500 transition-colors"
-                  title="Unlock more colors with Pro"
-                >
-                  <Sparkles className="w-5 h-5 text-purple-400" />
-                </button>
-              )}
             </div>
-            {!hasPro && (
-              <p className="text-xs text-muted-foreground">
-                Upgrade to Pro to unlock custom theme colors
-              </p>
-            )}
           </div>
         </div>
 
@@ -481,7 +415,7 @@ const CreateEvent = () => {
             </div>
 
             <div className="space-y-2 mt-6">
-              <Label className="text=sm"> Venue Details</Label>
+              <Label className="text-sm"> Venue Details</Label>
 
               <Input
                 {...register("venue")}
@@ -501,19 +435,18 @@ const CreateEvent = () => {
           </div>
 
           {/* Description */}
-          <div className="sapce-y-2">
+          <div className="space-y-2">
             <Label>Description</Label>
             <Textarea
-             {...register("description")}
-             placeholder="Tell people about your events..."
-             rows={4}
+              {...register("description")}
+              placeholder="Tell people about your events..."
+              rows={4}
             />
             {errors.description && (
               <p className="text-sm text-red-400">
                 {errors.description.message}
               </p>
             )}
-
           </div>
 
           <div className="space-y-3">
@@ -529,17 +462,13 @@ const CreateEvent = () => {
                 />
                 Free
               </label>
-              <label className="flex items-center gap-2">
-                <input type="radio" value="paid" {...register("ticketType")} />{" "}
-                Paid
-              </label>
             </div>
 
             {ticketType === "paid" && (
               <Input
-               type="number"
-               placeholder="Ticket price ₹"
-               {...register("ticketPrice", {valueAsNumber: true})}
+                type="number"
+                placeholder="Ticket price ₹"
+                {...register("ticketPrice", { valueAsNumber: true })}
               />
             )}
           </div>
@@ -548,7 +477,7 @@ const CreateEvent = () => {
             <Label className="text-sm">Capacity</Label>
             <Input
               type="number"
-              {...register("capacity", {valueAsNumber: true})}
+              {...register("capacity", { valueAsNumber: true })}
               placeholder="Ex: 100"
             />
             {errors.capacity && (
@@ -557,16 +486,16 @@ const CreateEvent = () => {
           </div>
 
           <Button
-           type="submit"
-           disabled={isLoading}
-           className="w-full py-6 text-lg rounded-xl"
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-6 text-lg rounded-xl"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin"/> Creating...
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...
               </>
             ) : (
-               "Create Event"
+              "Create Event"
             )}
           </Button>
         </form>
@@ -583,13 +512,6 @@ const CreateEvent = () => {
           }}
         />
       )}
-
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        trigger={upgradeReason}
-      />
     </div>
   );
 };

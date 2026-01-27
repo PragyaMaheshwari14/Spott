@@ -7,23 +7,16 @@ import { Button } from "./ui/button";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BarLoader } from "react-spinners";
 import { useStoreUser } from "@/hooks/use-store-user";
-import { Building, Crown, Plus, Ticket } from "lucide-react";
+import { Building, Plus, Ticket } from "lucide-react";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import OnboardingModal from "./onboarding-modal";
 import SearchLocationBar from "./search-location-bar";
-import { Badge } from "./ui/badge";
-import UpgradeModal from "./upgrade-modal";
 
 const Header = () => {
   const { isLoading } = useStoreUser();
 
-  const [showUpgradeModal, setshowUpgradeModal] = useState(false);
-
   const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } =
     useOnboarding();
-
-  const { has } = useAuth();
-  const hasPro = has?.({ plan: "pro" });
 
   return (
     <>
@@ -40,13 +33,6 @@ const Header = () => {
               priority
             />
 
-            {/* Pro badge */}
-            {hasPro && (
-              <Badge className="bg-linear-to-r from-pink-500 to-orange-500 gap-1 text-white ml-3">
-                <Crown className="w-3 h-3" />
-                Pro
-              </Badge>
-            )}
           </Link>
 
           {/* search & location - Dekstop only */}
@@ -56,15 +42,6 @@ const Header = () => {
 
           {/* Right Side Acrtions */}
           <div className="flex items-center">
-            {!hasPro && (
-              <Button
-                variant={"ghost"}
-                size="sm"
-                onClick={() => setshowUpgradeModal(true)}
-              >
-                Pricing
-              </Button>
-            )}
 
             <Button variant={"ghost"} size="sm" asChild className={"mr-2"}>
               <Link href="explore">Explore</Link>
@@ -124,12 +101,6 @@ const Header = () => {
         isOpen={showOnboarding}
         onClose={handleOnboardingSkip}
         onComplete={handleOnboardingComplete}
-      />
-
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setshowUpgradeModal(false)}
-        trigger="header"
       />
     </>
   );
