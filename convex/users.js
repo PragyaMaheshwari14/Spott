@@ -45,27 +45,44 @@ export const store = mutation({
 });
 
 
-export const getCurrentUser =  query({
-    handler: async(ctx) => {
-      const identity = await ctx.auth.getUserIdentity();
+// export const getCurrentUser =  query({
+//     handler: async(ctx) => {
+//       const identity = await ctx.auth.getUserIdentity();
 
-      if(!identity){
-        return null;
-      }
+//       if(!identity){
+//         return null;
+//       }
 
-      const user = await ctx.db
+//       const user = await ctx.db
+//       .query("users")
+//       .withIndex("by_token", (q)=>
+//         q.eq("tokenIdentifier", identity.tokenIdentifier)
+//       ) 
+//       .unique();
+
+//     if(!user) {
+//       throw new Error("User not found");
+//     }
+//     return user;
+//   },
+// });
+
+export const getCurrentUser = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q)=>
+      .withIndex("by_token", (q) =>
         q.eq("tokenIdentifier", identity.tokenIdentifier)
-      ) 
+      )
       .unique();
 
-    if(!user) {
-      throw new Error("User not found");
-    }
-    return user;
+    return user ?? null;
   },
 });
+
 
 export const completeOnboarding = mutation({
   args: {

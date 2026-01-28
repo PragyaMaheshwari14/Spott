@@ -12,11 +12,15 @@ import { useOnboarding } from "@/hooks/use-onboarding";
 import OnboardingModal from "./onboarding-modal";
 import SearchLocationBar from "./search-location-bar";
 
-const Header = () => {
+export default function Header()  {
   const { isLoading } = useStoreUser();
 
-  const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } =
-    useOnboarding();
+  const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } = useOnboarding();
+
+    // ✅ STOP rendering until user is stored
+  if (isLoading) {
+    return null; // or full-page loader
+  }
 
   return (
     <>
@@ -106,4 +110,3 @@ const Header = () => {
   );
 };
 
-export default Header;

@@ -83,7 +83,7 @@ const CreateEvent = () => {
       locationType: "physical",
       ticketType: "free",
       capacity: 50,
-      themeColor: "#1e3a8a",
+      themeColor: "#121212",
       category: "",
       state: "",
       city: "",
@@ -110,19 +110,6 @@ const CreateEvent = () => {
   }, [selectedState, indianStates]);
 
   //Color presets = show all for Pro, only default for free
-
-  const colorPresets = [
-    "#1e3a8a",
-    "#4c1d95",
-    "#065f46",
-    "#92400e",
-    "#7f1d1d",
-    "#831843",
-  ];
-
-  const hadnleColorClick = (color) => {
-    setValue("themeColor", color);
-  };
 
   const combineDateTime = (date, time) => {
     if (!date || !time) return null;
@@ -192,9 +179,9 @@ const CreateEvent = () => {
 
       <div className="max-w-6xl mx-auto grid md:grid-cols-[320px_1fr] gap-10">
         {/* Left : Image + Theme */}
-        <div className="space-y-6">
+        <div className="space-y-6 md:space-y-6">
           <div
-            className="aspect-square w-full rounded-xl overflow-hidden flex items-center
+            className="aspect-[4/3] md:aspect-square rounded-xl overflow-hidden flex items-center
           justify-center cursor-pointer border"
             onClick={() => setShowImagePicker(true)}
           >
@@ -213,36 +200,15 @@ const CreateEvent = () => {
               </span>
             )}
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">Theme Color</Label>
-            </div>
-
-            <div className="flex gap-2 flex-wrap">
-              {colorPresets.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className="w-10 h-10 rounded-full border-2 hover:scale-110 transition-all"
-                  style={{
-                    backgroundColor: color,
-                    borderColor: themeColor === color ? "white" : "transparent",
-                  }}
-                  onClick={() => hadnleColorClick(color)}
-                />
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Right: form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="spacey-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
           <div>
             <Input
               {...register("title")}
               placeholder="Event Name"
-              className="text-3xl font-semibold bg-transparent border-none focus-visible:ring-0"
+              className="text-2xl md:text-3xl font-semibold bg-transparent border-none focus-visible:ring-0 px-0 py-2"
             />
             {errors.title && (
               <p className="text-sm text-red-400 mt-1">
@@ -251,7 +217,7 @@ const CreateEvent = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-2">
               <Label className="text-sm">Start</Label>
 
@@ -353,7 +319,7 @@ const CreateEvent = () => {
             )}
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label className="text-sm">Location</Label>
 
             <div className="grid grid-cols-2 gap-4">
@@ -440,7 +406,8 @@ const CreateEvent = () => {
             <Textarea
               {...register("description")}
               placeholder="Tell people about your events..."
-              rows={4}
+              rows={5}
+              className="resize-none"
             />
             {errors.description && (
               <p className="text-sm text-red-400">
@@ -488,7 +455,7 @@ const CreateEvent = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full py-6 text-lg rounded-xl"
+            className="w-full py-6 text-lg rounded-xl mt-6"
           >
             {isLoading ? (
               <>
