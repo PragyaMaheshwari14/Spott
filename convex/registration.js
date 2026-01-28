@@ -72,21 +72,52 @@ export const registerForEvent = mutation({
   },
 });
 
+// export const checkRegistration = query({
+//   args: { eventId: v.id("events") },
+//   handler: async (ctx, args) => {
+//     const user = await ctx.runQuery(internal.users.getCurrentUser);
+
+//     const registration = await ctx.db
+//       .query("registration")
+//       .withIndex("by_event_user", (q) =>
+//         q.eq("eventId", args.eventId).eq("userId", user._id)
+//       )
+//       .unique();
+
+//     return registration?.status === "confirmed" ? registration : null;
+//   },
+// });
+
 export const checkRegistration = query({
   args: { eventId: v.id("events") },
   handler: async (ctx, args) => {
-    const user = await ctx.runQuery(internal.users.getCurrentUser);
+    const identity = await ctx.auth.getUserIdentity();
 
-    const registration = await ctx.db
-      .query("registration")
-      .withIndex("by_event_user", (q) =>
-        q.eq("eventId", args.eventId).eq("userId", user._id)
+    if (!identity) {
+      return null;
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", q =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
       )
       .unique();
 
-    return registration?.status === "confirmed" ? registration : null;
+    if (!user) {
+      return null;
+    }
+
+    return await ctx.db
+      .query("registration")
+      .withIndex("by_event_user", q =>
+        q.eq("eventId", args.eventId)
+         .eq("userId", user._id)
+      )
+      .unique();
   },
 });
+
 
 export const getMyRegistrations = query({
   handler: async (ctx) => {

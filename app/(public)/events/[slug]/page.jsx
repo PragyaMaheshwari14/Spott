@@ -25,6 +25,7 @@ import Image from "next/image";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import RegisterModal from "./_components/register-modal";
+import { toast } from "sonner";
 
 // Utility function to darken a color
 function darkenColor(color, amount) {
