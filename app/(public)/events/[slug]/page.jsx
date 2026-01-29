@@ -11,6 +11,7 @@ import { getCategoryIcon, getCategoryLabel } from "@/lib/data";
 import { useUser } from "@clerk/nextjs";
 import { format } from "date-fns/format";
 import {
+  ArrowLeft,
   Calendar,
   CheckCircle,
   Clock,
@@ -22,7 +23,12 @@ import {
   Users,
 } from "lucide-react";
 import Image from "next/image";
-import { notFound, useParams, useRouter } from "next/navigation";
+import {
+  notFound,
+  useParams,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import { useState } from "react";
 import RegisterModal from "./_components/register-modal";
 import { toast } from "sonner";
@@ -40,6 +46,11 @@ function darkenColor(color, amount) {
 const EventPage = () => {
   const params = useParams();
   const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from");
+  const category = searchParams.get("category");
+
   const { user } = useUser();
   const [showRegisterModal, setShowRegisterModal] = useState(false);
 
@@ -49,10 +60,10 @@ const EventPage = () => {
 
   const { data: registration } = useConvexQuery(
     api.registration.checkRegistration,
-    event?._id ? { eventId: event._id } : "skip"
+    event?._id ? { eventId: event._id } : "skip",
   );
 
-   const handleShare = async () => {
+  const handleShare = async () => {
     const url = window.location.href;
     if (navigator.share) {
       try {
@@ -79,6 +90,29 @@ const EventPage = () => {
     setShowRegisterModal(true);
   };
 
+  const returnTo = searchParams.get("returnTo");
+
+const handleBack = () => {
+  if (!returnTo) {
+    router.push("/explore");
+    return;
+  }
+
+  if (returnTo === "popular") {
+    router.push("/explore?scroll=popular");
+    return;
+  }
+
+  if (returnTo.startsWith("category:")) {
+    const category = returnTo.split(":")[1];
+    router.push(`/explore/${category}`);
+    return;
+  }
+
+  router.push("/explore");
+};
+
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -99,7 +133,7 @@ const EventPage = () => {
     notFound();
   }
 
-   const isEventFull = event.registrationCount >= event.capacity;
+  const isEventFull = event.registrationCount >= event.capacity;
   const isEventPast = event.endDate < Date.now();
   const isOrganizer = user?.id === event.organizerId;
 
@@ -108,12 +142,32 @@ const EventPage = () => {
       style={{
         backgroundColor: event.themeColor || "#1e3a8a",
       }}
-      className="min-h-screen py-8 -mt-6 md:-mt-16 lg:-mx-5"
+      className="min-h-screen py-8 -mt-6 md:-mt-16 overflow-x-hidden"
     >
       {/* UI */}
-      <div className="max-w-7xl mx-auto px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <Badge variant="secondary" className="mb-3">
+      
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                if (from === "category" && category) {
+                  router.push(`/explore/${category}`);
+                } else if (from === "popular") {
+                  router.push("/explore?scroll=popular");
+                } else {
+                  router.push("/explore");
+                }
+              }}
+              className="gap-2 -ml-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Explore
+            </Button>
+          </div>
+
+            <Badge variant="secondary" className="mb-3">
             {getCategoryIcon(event.category)} {getCategoryLabel(event.category)}
           </Badge>
 
@@ -147,7 +201,7 @@ const EventPage = () => {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-[1fr_380px] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
           {/* Main Content */}
           <div className="space-y-8">
             {/* Description */}
@@ -354,7 +408,7 @@ const EventPage = () => {
       </div>
 
       {/* Register Modal */}
-       {showRegisterModal && (
+      {showRegisterModal && (
         <RegisterModal
           event={event}
           isOpen={showRegisterModal}

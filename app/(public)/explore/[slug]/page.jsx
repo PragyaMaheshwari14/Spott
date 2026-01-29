@@ -1,17 +1,16 @@
 "use client";
-import EventCard from '@/components/event-card';
-import { Badge } from '@/components/ui/badge';
-import { api } from '@/convex/_generated/api';
-import { useConvexQuery } from '@/hooks/use-convex-query';
-import { CATEGORIES } from '@/lib/data';
-import { parseLocationSlug } from '@/lib/location-utils';
-import { Loader2, MapPin } from 'lucide-react';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import EventCard from "@/components/event-card";
+import { Badge } from "@/components/ui/badge";
+import { api } from "@/convex/_generated/api";
+import { useConvexQuery } from "@/hooks/use-convex-query";
+import { CATEGORIES } from "@/lib/data";
+import { parseLocationSlug } from "@/lib/location-utils";
+import { Loader2, MapPin } from "lucide-react";
+import { notFound, useParams, useRouter } from "next/navigation";
 
-import React from 'react';
+import React from "react";
 
-const DynamicExplorePage= () => {
-
+const DynamicExplorePage = () => {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug;
@@ -21,52 +20,51 @@ const DynamicExplorePage= () => {
   const isCategory = !!categoryInfo;
 
   //If's not a category, validate location
-  const {city, state, isValid} = !isCategory
-  ? parseLocationSlug(slug)
-  : {city: null, state: null, isValid: false};
+  const { city, state, isValid } = !isCategory
+    ? parseLocationSlug(slug)
+    : { city: null, state: null, isValid: false };
 
   //If it's not a valid category and nota a valid location, show 404
-  if(!categoryInfo && !isValid) {
+  if (!categoryInfo && !isValid) {
     notFound();
   }
 
-  const { data: events, isLoading} = useConvexQuery(
+  const { data: events, isLoading } = useConvexQuery(
     isCategory
       ? api.explore.getEventsByCategory
       : api.explore.getEventsByLocation,
     isCategory
-      ? { category: slug, limit: 50}
-      : city && state 
-        ? {city, state, limit: 50}
-        : "skip"
+      ? { category: slug, limit: 50 }
+      : city && state
+        ? { city, state, limit: 50 }
+        : "skip",
   );
 
   const handleEventClick = (eventSlug) => {
     router.push(`/events/${eventSlug}`);
   };
 
-  
-  if(isLoading){
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-         <Loader2 className="w-8 h-8 animate-spin text-purple-500"/>
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
       </div>
     );
   }
 
-  if(isCategory) {
+  if (isCategory) {
     return (
       <>
-        <div className='pb-5'>
-          <div className='flex items-center gap-4 mb-4'>
-            <div className='text-6xl'> {categoryInfo.icon}</div>
+        <div className="pb-5">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="text-6xl"> {categoryInfo.icon}</div>
             <div>
-               <h1 className='text-5xl md:text-6xl font-bold'>
-              {categoryInfo.label}
-            </h1>
-            <p className='text-lg text-muted-foreground mt-2'>
-               {categoryInfo.description}
-            </p>
+              <h1 className="text-5xl md:text-6xl font-bold">
+                {categoryInfo.label}
+              </h1>
+              <p className="text-lg text-muted-foreground mt-2">
+                {categoryInfo.description}
+              </p>
             </div>
           </div>
 
@@ -83,7 +81,11 @@ const DynamicExplorePage= () => {
               <EventCard
                 key={event._id}
                 event={event}
-                onClick={() => handleEventClick(event.slug)}
+                onClick={() =>
+                  router.push(
+                    `/events/${event.slug}?from=category&category=${slug}`,
+                  )
+                }
               />
             ))}
           </div>
@@ -93,10 +95,10 @@ const DynamicExplorePage= () => {
           </p>
         )}
       </>
-    )
+    );
   }
 
-     // Location View
+  // Location View
   return (
     <>
       <div className="pb-5">
@@ -127,7 +129,9 @@ const DynamicExplorePage= () => {
             <EventCard
               key={event._id}
               event={event}
-              onClick={() => handleEventClick(event.slug)}
+              onClick={() =>
+                router.push(`/events/${event.slug}?returnTo=category:${slug}`)
+              }
             />
           ))}
         </div>
@@ -138,6 +142,6 @@ const DynamicExplorePage= () => {
       )}
     </>
   );
-}
+};
 
-export default DynamicExplorePage
+export default DynamicExplorePage;
