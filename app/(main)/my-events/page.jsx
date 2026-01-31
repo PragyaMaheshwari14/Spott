@@ -8,9 +8,15 @@ import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+
 
 const MyEvents = () => {
   const router = useRouter();
+
+  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
+
 
   const { data: events, isLoading } = useConvexQuery(api.events.getMyEvents);
   const { mutate: deleteEvent } = useConvexMutation(api.events.deleteEvent);
@@ -33,6 +39,22 @@ const MyEvents = () => {
   const handleEventClick = (eventId) => {
     router.push(`/my-events/${eventId}`);
   };
+  
+  useEffect(() => {
+  if (!isAdminLoading && !isAdmin) {
+    router.replace("/"); // or "/explore"
+  }
+}, [isAdmin, isAdminLoading, router]);
+
+if (isAdminLoading) {
+  return null;
+}
+
+if (!isAdmin) {
+  return null;
+}
+
+  
 
   if (isLoading) {
     return (
@@ -42,6 +64,7 @@ const MyEvents = () => {
     );
   }
 
+  
   return (
     <div className="min-h-screen pb-20 px-4">
       <div className="max-w-7xl mx-auto">

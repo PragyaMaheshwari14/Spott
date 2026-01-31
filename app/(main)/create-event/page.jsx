@@ -31,6 +31,8 @@ import {
 import { CATEGORIES } from "@/lib/data";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
+import { useEffect } from "react";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 //HH:MM in 24 hr
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -62,11 +64,12 @@ const eventSchema = z.object({
 
 const CreateEvent = () => {
   const router = useRouter();
+  const { isAdmin, isLoading: isAdminLoading } = useIsAdmin();
 
   const [showImagePicker, setShowImagePicker] = useState(false);
 
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
-  const { mutate: createEvent, isLoading } = useConvexMutation(
+  const { mutate: createEvent, isLoading: isCreatingEvent } = useConvexMutation(
     api.events.createEvent,
   );
 
@@ -163,6 +166,15 @@ const CreateEvent = () => {
       toast.error(error.message || "Failed to create event");
     }
   };
+
+  useEffect(() => {
+    if (!isAdminLoading && !isAdmin) {
+      router.replace("/");
+    }
+  }, [isAdmin, isAdminLoading, router]);
+
+  if (isAdminLoading) return null;
+  if (!isAdmin) return null;
 
   return (
     <div
@@ -454,10 +466,10 @@ const CreateEvent = () => {
 
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isCreatingEvent}
             className="w-full py-6 text-lg rounded-xl mt-6"
           >
-            {isLoading ? (
+            {isCreatingEvent ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating...
               </>

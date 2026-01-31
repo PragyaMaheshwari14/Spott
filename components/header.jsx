@@ -2,7 +2,7 @@
 import { SignInButton, useAuth, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "./ui/button";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BarLoader } from "react-spinners";
@@ -11,13 +11,16 @@ import { Building, Plus, Ticket } from "lucide-react";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import OnboardingModal from "./onboarding-modal";
 import SearchLocationBar from "./search-location-bar";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
-export default function Header()  {
+export default function Header() {
   const { isLoading } = useStoreUser();
+  const { isAdmin } = useIsAdmin();
 
-  const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } = useOnboarding();
+  const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } =
+    useOnboarding();
 
-    // ✅ STOP rendering until user is stored
+  // ✅ STOP rendering until user is stored
   if (isLoading) {
     return null; // or full-page loader
   }
@@ -36,7 +39,6 @@ export default function Header()  {
               className="w-full h-11"
               priority
             />
-
           </Link>
 
           {/* search & location - Dekstop only */}
@@ -46,18 +48,19 @@ export default function Header()  {
 
           {/* Right Side Acrtions */}
           <div className="flex items-center">
-
             <Button variant={"ghost"} size="sm" asChild className={"mr-2"}>
               <Link href="explore">Explore</Link>
             </Button>
 
             <Authenticated>
-              <Button size="sm" asChild className="flex gap-2 mr-4">
-                <Link href="/create-event">
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Create Event</span>
-                </Link>
-              </Button>
+              {isAdmin && (
+                <Button size="sm" asChild className="flex gap-2 mr-4">
+                  <Link href="/create-event">
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Create Event</span>
+                  </Link>
+                </Button>
+              )}
 
               {/* Create Event */}
               <UserButton>
@@ -67,12 +70,14 @@ export default function Header()  {
                     labelIcon={<Ticket size={16} />}
                     href="/my-tickets"
                   />
-
+                  
+                  {isAdmin && (
                   <UserButton.Link
                     label="My Events"
                     labelIcon={<Building size={16} />}
                     href="/my-events"
                   />
+                  )}
 
                   <UserButton.Action label="manageAccount" />
                 </UserButton.MenuItems>
@@ -108,5 +113,4 @@ export default function Header()  {
       />
     </>
   );
-};
-
+}
