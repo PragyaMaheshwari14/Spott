@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export default function ExploreLayout({ children }) {
   const pathname = usePathname();
@@ -11,18 +10,17 @@ export default function ExploreLayout({ children }) {
 
   return (
     <div className="pb-16 min-h-screen">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Back Button for nested routes */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        {/* Back button for nested routes */}
         {!isMainExplore && (
-          <div className="mb-6">
-            <Button
-              variant="ghost"
+          <div className="mb-7">
+            <button
               onClick={() => router.push("/explore")}
-              className="gap-2 -ml-2"
+              className="flex items-center gap-2 text-sm text-[oklch(0.55_0.025_80)] hover:text-[oklch(0.45_0.13_155)] font-light transition-colors duration-200 group"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
               Back to Explore
-            </Button>
+            </button>
           </div>
         )}
 

@@ -29,12 +29,27 @@ import { toast } from "sonner";
 import AttendeeCard from "./_components/attendee-card";
 import QRScannerModal from "./_components/qr-scanner-modal";
 
+// ── Stat card ─────────────────────────────────────────────────
+const StatCard = ({ icon: Icon, iconBg, iconColor, value, label }) => (
+  <Card className="py-0 bg-[oklch(0.99_0.006_80)] border border-[oklch(0.87_0.025_85_/_0.5)] rounded-2xl hover:border-[oklch(0.75_0.09_150_/_0.4)] hover:shadow-[0_4px_20px_-8px_oklch(0.45_0.13_155_/_0.12)] transition-all duration-200">
+    <CardContent className="p-5 flex items-center gap-4">
+      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${iconBg}`}>
+        <Icon className={`w-5 h-5 ${iconColor}`} />
+      </div>
+      <div>
+        <p className="font-display text-2xl text-[oklch(0.18_0.02_80)] leading-none mb-1">{value}</p>
+        <p className="text-xs text-[oklch(0.60_0.025_80)] font-light">{label}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
 
+// ─────────────────────────────────────────────────────────────
 const EventDashboard = () => {
   const params = useParams();
   const router = useRouter();
   const eventId = params.eventId;
- 
+
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showQRScanner, setShowQRScanner] = useState(false);
@@ -44,26 +59,28 @@ const EventDashboard = () => {
     { eventId }
   );
 
-  //Fetch registration
   const { data: registration, isLoading: loadingRegistrations } =
     useConvexQuery(api.registration.getEventRegistrations, { eventId });
 
-
+  /* ── Loading ── */
   if (isLoading || loadingRegistrations) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[oklch(0.88_0.055_150)] flex items-center justify-center">
+            <Loader2 className="w-5 h-5 animate-spin text-[oklch(0.45_0.13_155)]" />
+          </div>
+          <p className="text-sm text-[oklch(0.60_0.025_80)] font-light">Loading dashboard…</p>
+        </div>
       </div>
     );
   }
 
-  if (!dashboardData) {
-    notFound();
-  }
+  if (!dashboardData) notFound();
 
   const { event, stats } = dashboardData;
 
-  //Filer registrations based on active tab and search
+  /* ── Filter registrations ── */
   const filteredRegistrations = registration.filter((reg) => {
     const matchesSearch =
       reg.attendeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -71,20 +88,17 @@ const EventDashboard = () => {
       reg.qrCode.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (activeTab === "all") return matchesSearch && reg.status === "confirmed";
-    if (activeTab === "checked-in")
-      return matchesSearch && reg.checkedIn && reg.status === "confirmed";
-    if (activeTab === "pending")
-      return matchesSearch && !reg.checkedIn && reg.status === "confirmed";
-
+    if (activeTab === "checked-in") return matchesSearch && reg.checkedIn && reg.status === "confirmed";
+    if (activeTab === "pending") return matchesSearch && !reg.checkedIn && reg.status === "confirmed";
     return matchesSearch;
   });
 
-  const handleExplortCSV = () => {
-    if (!registration && registration.length === 0) {
+  /* ── CSV export ── */
+  const handleExportCSV = () => {
+    if (!registration || registration.length === 0) {
       toast.error("No registrations to export");
       return;
     }
-
     const csvContent = [
       ["Name", "Email", "Registered At", "Checked In", "Checked At", "QR Code"],
       ...registration.map((reg) => [
@@ -103,27 +117,35 @@ const EventDashboard = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${dashboardData?.event.title || "event"}_registration.csv`;
+    a.download = `${event.title || "event"}_registrations.csv`;
     a.click();
     toast.success("CSV exported successfully");
   };
 
+  /* ── Capacity fill % ── */
+  const capacityPct = Math.min(
+    Math.round((stats.totalRegistrations / stats.capacity) * 100),
+    100
+  );
+
   return (
     <div className="min-h-screen pb-20 px-4">
       <div className="max-w-7xl mx-auto">
+
+        {/* ── Back button ── */}
         <div className="mb-6">
-          <Button
-            variant="ghost"
+          <button
             onClick={() => router.push("/my-events")}
-            className="gap-2 -ml-2"
+            className="flex items-center gap-2 text-sm text-[oklch(0.55_0.025_80)] hover:text-[oklch(0.45_0.13_155)] font-light transition-colors duration-200 group"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
             Back to My Events
-          </Button>
+          </button>
         </div>
 
+        {/* ── Cover image ── */}
         {event.coverImage && (
-          <div className="relative h-[350px] rounded-2xl overflow-hidden mb-6">
+          <div className="relative h-64 sm:h-80 rounded-3xl overflow-hidden mb-8 shadow-[0_8px_40px_-12px_oklch(0.18_0.02_80_/_0.2)]">
             <Image
               src={event.coverImage}
               alt={event.title}
@@ -131,186 +153,251 @@ const EventDashboard = () => {
               className="object-cover"
               priority
             />
+            {/* Gradient overlay at bottom for text readability */}
+            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[oklch(0.10_0.01_80_/_0.5)] to-transparent" />
           </div>
         )}
 
-        <div className="flex flex-col gap-5 sm:flex-row items-start justify-between mb-4">
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold mb-3">{event.title}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <Badge variant="outline">
-                {getCategoryIcon(event.category)}
-                {""}
-                {getCategoryLabel(event.category)}
+        {/* ── Event header ── */}
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-8">
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.13_152)]" />
+              <span className="text-[10px] tracking-[0.18em] uppercase text-[oklch(0.60_0.05_150)] font-medium">
+                Event Dashboard
+              </span>
+            </div>
+            <h1 className="font-display text-3xl sm:text-4xl text-[oklch(0.18_0.02_80)] leading-tight">
+              {event.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge className="text-xs rounded-full bg-[oklch(0.88_0.055_150)] text-[oklch(0.30_0.10_155)] border-0 px-3 py-1">
+                {getCategoryIcon(event.category)}&nbsp;{getCategoryLabel(event.category)}
               </Badge>
-
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 text-xs text-[oklch(0.55_0.025_80)] font-light">
+                <Calendar className="w-3.5 h-3.5 text-[oklch(0.55_0.13_152)]" />
                 <span>{format(event.startDate, "PPP")}</span>
               </div>
-
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 text-xs text-[oklch(0.55_0.025_80)] font-light">
+                <MapPin className="w-3.5 h-3.5 text-[oklch(0.55_0.13_152)]" />
                 <span>{`${event.city}, ${event.state || event.country}`}</span>
               </div>
             </div>
           </div>
 
-          <div className="w-full sm:w-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/events/${event.slug}`)}
-              className="gap-2 flex-1"
-            >
-              <Eye className="w-4 h-4" />
-              View
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/events/${event.slug}`)}
+            className="
+              shrink-0 rounded-full gap-2 text-xs font-medium
+              border-[oklch(0.80_0.06_150_/_0.5)]
+              text-[oklch(0.35_0.10_155)]
+              hover:bg-[oklch(0.88_0.055_150)]
+              hover:border-[oklch(0.65_0.09_150)]
+              transition-all duration-200
+            "
+          >
+            <Eye className="w-3.5 h-3.5" />
+            View Public Page
+          </Button>
         </div>
 
-        {/* Show QR Scanner if event is today  */}
+        {/* ── QR scan CTA — only on event day ── */}
         {stats.isEventToday && !stats.isEventPast && (
-          <Button
-            size="lg"
-            className="mb-8 w-full gap-2 h-10 bg-linear-to-r from-orange-500 via-pink-500 to-red-500 text-white hover:scale-[1.02]"
+          <button
             onClick={() => setShowQRScanner(true)}
+            className="
+              w-full mb-8 py-4 rounded-2xl flex items-center justify-center gap-3
+              bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
+              text-[oklch(0.97_0.01_85)] font-medium text-base
+              shadow-[0_6px_28px_-8px_oklch(0.45_0.13_155_/_0.5)]
+              hover:shadow-[0_8px_36px_-8px_oklch(0.45_0.13_155_/_0.65)]
+              hover:scale-[1.005] transition-all duration-200
+            "
           >
-            <QrCode className="w-6 h-6" />
-            Scan QR Code to Check-in
-          </Button>
+            <QrCode className="w-5 h-5" />
+            Scan QR Code to Check-In Attendees
+          </button>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <Card className="py-0">
-            <CardContent className="p-6 flex items-center gap-3">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Users className="w-6 h-6 text-purple-600" />
+        {/* ── Stats grid ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          {/* Capacity with fill bar */}
+          <Card className="py-0 col-span-2 md:col-span-1 bg-[oklch(0.99_0.006_80)] border border-[oklch(0.87_0.025_85_/_0.5)] rounded-2xl hover:border-[oklch(0.75_0.09_150_/_0.4)] transition-all duration-200">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 rounded-2xl bg-[oklch(0.88_0.055_150)] flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-[oklch(0.38_0.11_155)]" />
+                </div>
+                <div>
+                  <p className="font-display text-2xl text-[oklch(0.18_0.02_80)] leading-none mb-0.5">
+                    {stats.totalRegistrations}
+                    <span className="text-base text-[oklch(0.65_0.025_80)] font-sans font-light">
+                      /{stats.capacity}
+                    </span>
+                  </p>
+                  <p className="text-xs text-[oklch(0.60_0.025_80)] font-light">Capacity</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stats.totalRegistrations} / {stats.capacity}
-                </p>
-                <p className="text-sm text-muted-foreground">Capcity</p>
+              {/* Capacity bar */}
+              <div className="h-1.5 rounded-full bg-[oklch(0.90_0.025_82)] overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-[oklch(0.55_0.13_152)] transition-all duration-500"
+                  style={{ width: `${capacityPct}%` }}
+                />
               </div>
+              <p className="text-[10px] text-[oklch(0.65_0.025_80)] font-light mt-1">{capacityPct}% filled</p>
             </CardContent>
           </Card>
 
-          <Card className="py-0">
-            <CardContent className="p-6 flex items-center gap-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.checkedInCount}</p>
-                <p className="text-sm text-muted-foreground">Checked In</p>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon={CheckCircle}
+            iconBg="bg-[oklch(0.88_0.055_150)]"
+            iconColor="text-[oklch(0.38_0.11_155)]"
+            value={stats.checkedInCount}
+            label="Checked In"
+          />
 
           {event.ticketType === "paid" ? (
-            <Card className="py-0">
-              <CardContent className="p-6 flex items-center gap-3">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">₹{stats.totalRevenue}</p>
-                  <p className="text-sm text-muted-foreground">Revenue</p>
-                </div>
-              </CardContent>
-            </Card>
+            <StatCard
+              icon={TrendingUp}
+              iconBg="bg-[oklch(0.93_0.018_85)]"
+              iconColor="text-[oklch(0.45_0.13_155)]"
+              value={`₹${stats.totalRevenue}`}
+              label="Revenue"
+            />
           ) : (
-            <Card className="py-0">
-              <CardContent className="p-6 flex items-center gap-3">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.checkIRate}%</p>
-                  <p className="text-sm text-muted-foreground">Check-in Rate</p>
-                </div>
-              </CardContent>
-            </Card>
+            <StatCard
+              icon={TrendingUp}
+              iconBg="bg-[oklch(0.93_0.018_85)]"
+              iconColor="text-[oklch(0.45_0.13_155)]"
+              value={`${stats.checkIRate}%`}
+              label="Check-in Rate"
+            />
           )}
 
-          <Card className="py-0">
-            <CardContent className="p-6 flex items-center gap-3">
-              <div className="p-3 bg-amber-100 rounded-lg">
-                <Clock className="w-6 h-6 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {stats.isEventPast
-                    ? "Ended"
-                    : stats.hoursUntilEvent > 24
-                      ? `${Math.floor(stats.hoursUntilEvent / 24)}d`
-                      : `${stats.hoursUntilEvent}h`}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {stats.isEventPast ? "Event Over" : "Time Left"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon={Clock}
+            iconBg="bg-[oklch(0.95_0.03_85)]"
+            iconColor="text-[oklch(0.55_0.06_80)]"
+            value={
+              stats.isEventPast
+                ? "Ended"
+                : stats.hoursUntilEvent > 24
+                  ? `${Math.floor(stats.hoursUntilEvent / 24)}d`
+                  : `${stats.hoursUntilEvent}h`
+            }
+            label={stats.isEventPast ? "Event Over" : "Time Left"}
+          />
         </div>
-        {/* Attendee Management */}
-        <h2 className="text-2xl font-bold mb-4">Attendee Management</h2>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="all">
-              All ({stats.totalRegistrations})
-            </TabsTrigger>
-            <TabsTrigger value="checked-in">
-              Check In ({stats.checkedInCount})
-            </TabsTrigger>
-            <TabsTrigger value="pending">
-              Pending ({stats.pendingCount})
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Search & Action */}
-          <div className="flex gap-3 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, email, or QR code..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={handleExplortCSV}
-              className="gap-2"
-            >
-              <Download className="w-4 h-4" />
-              Export CSV
-            </Button>
+        {/* ── Attendee management ── */}
+        <div className="space-y-5">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.13_152)]" />
+            <h2 className="font-display text-2xl text-[oklch(0.18_0.02_80)]">
+              Attendee Management
+            </h2>
           </div>
 
-          <TabsContent value={activeTab} className="space-y-3 mt-0">
-            {filteredRegistrations && filteredRegistrations.length > 0 ? (
-              filteredRegistrations.map((reg) => (
-                <AttendeeCard key={reg._id} registration={reg}/>
-              ))
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                No attendees found
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            {/* Tab list */}
+            <TabsList className="
+              bg-[oklch(0.93_0.018_85)] rounded-xl p-1 gap-1 mb-5
+              border border-[oklch(0.87_0.025_85_/_0.4)]
+            ">
+              {[
+                { value: "all",        label: "All",       count: stats.totalRegistrations },
+                { value: "checked-in", label: "Checked In", count: stats.checkedInCount },
+                { value: "pending",    label: "Pending",   count: stats.pendingCount },
+              ].map(({ value, label, count }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="
+                    rounded-lg text-xs font-medium px-4 py-2
+                    text-[oklch(0.55_0.025_80)]
+                    data-[state=active]:bg-[oklch(0.99_0.006_80)]
+                    data-[state=active]:text-[oklch(0.35_0.10_155)]
+                    data-[state=active]:shadow-sm
+                    transition-all duration-150
+                  "
+                >
+                  {label}
+                  <span className="
+                    ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full
+                    bg-[oklch(0.88_0.055_150_/_0.6)] text-[oklch(0.38_0.10_155)]
+                  ">
+                    {count}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {/* Search + Export */}
+            <div className="flex gap-3 mb-5">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[oklch(0.60_0.05_150)] pointer-events-none" />
+                <Input
+                  placeholder="Search by name, email, or QR code…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="
+                    pl-9 h-10 rounded-xl
+                    bg-[oklch(0.97_0.012_85)]
+                    border border-[oklch(0.85_0.025_85)]
+                    text-[oklch(0.18_0.02_80)] placeholder:text-[oklch(0.65_0.025_80)] placeholder:font-light
+                    focus-visible:ring-1 focus-visible:ring-[oklch(0.55_0.13_152)]
+                    focus-visible:border-[oklch(0.75_0.09_150)]
+                    text-sm transition-all duration-200
+                  "
+                />
               </div>
-            )}
-          </TabsContent>
-        </Tabs>
+
+              <Button
+                variant="outline"
+                onClick={handleExportCSV}
+                className="
+                  h-10 rounded-xl gap-2 text-xs font-medium shrink-0
+                  border-[oklch(0.80_0.06_150_/_0.5)]
+                  text-[oklch(0.35_0.10_155)]
+                  hover:bg-[oklch(0.88_0.055_150)]
+                  hover:border-[oklch(0.65_0.09_150)]
+                  transition-all duration-200
+                "
+              >
+                <Download className="w-3.5 h-3.5" />
+                Export CSV
+              </Button>
+            </div>
+
+            {/* Attendee list */}
+            <TabsContent value={activeTab} className="space-y-3 mt-0">
+              {filteredRegistrations && filteredRegistrations.length > 0 ? (
+                filteredRegistrations.map((reg) => (
+                  <AttendeeCard key={reg._id} registration={reg} />
+                ))
+              ) : (
+                <div className="
+                  rounded-2xl border border-dashed border-[oklch(0.82_0.045_150)]
+                  bg-[oklch(0.97_0.012_85)] py-14 text-center
+                ">
+                  <p className="text-sm text-[oklch(0.60_0.025_80)] font-light">
+                    {searchQuery ? "No attendees match your search" : "No attendees in this category"}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
 
       {/* QR Scanner Modal */}
       {showQRScanner && (
-        <QRScannerModal 
-          isOpen = {showQRScanner}
-          onClose ={()=> setShowQRScanner(false)}
+        <QRScannerModal
+          isOpen={showQRScanner}
+          onClose={() => setShowQRScanner(false)}
         />
       )}
     </div>

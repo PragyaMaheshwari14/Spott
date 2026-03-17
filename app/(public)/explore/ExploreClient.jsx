@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { createLocationSlug } from "@/lib/location-utils";
 import EventCard from "@/components/event-card";
 import { CATEGORIES } from "@/lib/data";
-import { Card, CardContent } from "@/components/ui/card";
 
 const ExploreClient = () => {
   const { data: currentUser } = useConvexQuery(api.users.getCurrentUser);
@@ -58,220 +57,270 @@ const ExploreClient = () => {
     count: categoryCounts?.[cat.id] || 0,
   }));
 
-  const openPopularEvent = (slug) => {
-    router.push(`/events/${slug}?returnTo=popular`);
-  };
-
-  const handleCategoryClick = (categoryId) => {
-    router.push(`/explore/${categoryId}`);
-  };
-
+  const openPopularEvent = (slug) => router.push(`/events/${slug}?returnTo=popular`);
+  const handleCategoryClick = (categoryId) => router.push(`/explore/${categoryId}`);
   const handleViewLocalEvents = () => {
     const city = currentUser?.location?.city || "Gurugram";
     const state = currentUser?.location?.state || "Haryana";
-    const slug = createLocationSlug(city, state);
-    router.push(`/explore/${slug}`);
+    router.push(`/explore/${createLocationSlug(city, state)}`);
   };
 
   const isLoading = loadingFeatured || loadingLocal || loadingPopular;
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[oklch(0.88_0.055_150)] flex items-center justify-center">
+            <Loader2 className="w-5 h-5 animate-spin text-[oklch(0.45_0.13_155)]" />
+          </div>
+          <p className="text-sm text-[oklch(0.60_0.025_80)] font-light">Loading events…</p>
+        </div>
       </div>
     );
   }
 
+  const hasAnyEvents =
+    (featuredEvents?.length ?? 0) > 0 ||
+    (localEvents?.length ?? 0) > 0 ||
+    (popularEvents?.length ?? 0) > 0;
+
   return (
     <>
-         <div className="pb-12 text-center">
-           <h1 className="text-5xl md:text-6xl font-bold mb-4">Discover Events</h1>
-           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-             Explore featured events, find what&apos;s happening locally, or browse
-             events across India
-           </p>
-         </div>
-   
-         {/* Featured Carousel */}
-   
-         {featuredEvents && featuredEvents.length > 0 && (
-           <div className="mb-16">
-             <Carousel
-               className="w-full"
-               plugins={[plugin.current]}
-               onMouseEnter={plugin.current.stop}
-               onMouseLeave={plugin.current.reset}
-             >
-               <CarouselContent>
-                 {featuredEvents.map((event) => (
-                   <CarouselItem key={event._id}>
-                     <div
-                       onClick={() => openPopularEvent(event.slug)}
-                       className="relative h-[400px] rounded-xl overflow-hidden cursor-pointer"
-                     >
-                       {event.coverImage ? (
-                         <Image
-                           src={event.coverImage}
-                           alt={event.title}
-                           fill
-                           className="object-cover"
-                           priority
-                         />
-                       ) : (
-                         <div
-                           className="absolute inset-0"
-                           style={{ backgroundColor: event.themeColor }}
-                         />
-                       )}
-   
-                       <div className="absolute inset-0 bg-linear-to-r from-black/60 to black/30" />
-   
-                       <div className="relative h-full flex flex-col justify-end p-8 md:p-12">
-                         <Badge className="w-fit mb-4" variant="secondary">
-                           {event.city}, {event.state || event.country}
-                         </Badge>
-                         <h2 className="text-3xl md:text-5xl font-bold mb-3 text-white">
-                           {event.title}
-                         </h2>
-                         <p className="text-lg text-white/90 mb-4 max-w-2xl line-clamp-1">
-                           {event.description}
-                         </p>
-   
-                         <div className="flex items-center gap-4 text-white/80">
-                           <div className="flex items-center gap-2">
-                             <Calendar className="w-4 h-4" />
-                             <span className="text-sm">
-                               {format(event.startDate, "ppp")}
-                             </span>
-                           </div>
-   
-                           <div className="flex items-center gap-2">
-                             <MapPin className="w-4 h-4" />
-                             <span className="text-sm">{event.city}</span>
-                           </div>
-   
-                           <div className="flex items-center gap-2">
-                             <Users className="w-4 h-4" />
-                             <span className="text-sm">
-                               {event.registrationCount} registered
-                             </span>
-                           </div>
-                         </div>
-                       </div>
-                     </div>
-                   </CarouselItem>
-                 ))}
-               </CarouselContent>
-               <CarouselPrevious className="left-4" />
-               <CarouselNext className="right-4" />
-             </Carousel>
-           </div>
-         )}
-   
-         {/* Local Events */}
-         {localEvents && localEvents.length > 0 && (
-           <div className="mb-16">
-             <div className="flex items-center justify-between mb-6">
-               <div>
-                 <h2 className="text-3xl font-bold mb-1">Events Near You</h2>
-                 <p className="text-muted-foreground">
-                   Happening in {currentUser?.location?.city || "you area"}
-                 </p>
-               </div>
-   
-               <Button
-                 variant="outline"
-                 className="gap-2"
-                 onClick={() => handleViewLocalEvents()}
-               >
-                 View All <ArrowRight className="w-4 h-4" />
-               </Button>
-             </div>
-   
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-               {localEvents.map((event) => (
-                 <EventCard
-                   key={event._id}
-                   event={event}
-                   variant="compact"
-                   onClick={() => openPopularEvent(event.slug)}
-                 />
-               ))}
-             </div>
-           </div>
-         )}
-   
-         {/* Browse by Category */}
-         <div className="mb-16">
-           <h2 className="text-3xl font-bold mb-6">Browse by Category</h2>
-   
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-             {categoriesWithCounts.map((category) => (
-               <Card
-                 key={category.id}
-                 className="py-2 group cursor-pointer hover:shadow-lg transition-all hover:border-purple-500/50"
-                 onClick={() => handleCategoryClick(category.id)}
-               >
-                 <CardContent className="px-3 sm:p-6 flex items-center gap-3">
-                   <div className="txt-3xl sm:text-4xl">{category.icon}</div>
-   
-                   <div className="flex-1 min-w-0">
-                     <h3 className="font-semibold mb-1 group-hover:text-purple-400 transition-colors">
-                       {category.label}
-                     </h3>
-                     <p className="text-sm text-muted-foreground">
-                       {category.count} Event{category.count !== 1 ? "s" : ""}
-                     </p>
-                   </div>
-                 </CardContent>
-               </Card>
-             ))}
-           </div>
-         </div>
-   
-         {/* Popular Events Across Country */}
-         {popularEvents && popularEvents.length > 0 && (
-           <div id="popular" className="mb-16">
-             <div className="mb-6">
-               <h2 className="text-3xl font-bold mb-1"> Popular Across India</h2>
-               <p className="text-muted-foreground">Trending events nationwide </p>
-             </div>
-   
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-               {popularEvents.map((event) => (
-                 <EventCard
-                   key={event._id}
-                   event={event}
-                   variant="list"
-                   onClick={() => openPopularEvent(event.slug)}
-                 />
-               ))}
-             </div>
-           </div>
-         )}
-   
-         {/* Empty State */}
-         {!loadingFeatured &&
-           !loadingLocal &&
-           !loadingPopular &&
-           (!featuredEvents || featuredEvents.length === 0) &&
-           (!localEvents || localEvents.length === 0) &&
-           (!popularEvents || popularEvents.length === 0) && (
-             <Card className="p-12 text-center">
-               <div className="max-w-md mx-auto space-y-4">
-                 <div className="text-6xl mb-4">🎉</div>
-                 <h2 className="text-2xl font-bold">No events yet</h2>
-                 <p className="text-muted-foreground">
-                   Be the first to create an event in your area!
-                 </p>
-                 <Button asChild className="gap-2">
-                   <a href="/create-event">Create Event</a>
-                 </Button>
-               </div>
-             </Card>
-           )}
-       </>
+      {/* ── Hero heading ── */}
+      <div className="pb-12 text-center">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.13_152)]" />
+          <span className="text-[10px] tracking-[0.18em] uppercase text-[oklch(0.60_0.05_150)] font-medium">
+            Spott
+          </span>
+        </div>
+        <h1 className="font-display text-5xl md:text-6xl text-[oklch(0.18_0.02_80)] leading-tight mb-3">
+          Discover Events
+        </h1>
+        <p className="text-base text-[oklch(0.55_0.025_80)] font-light max-w-xl mx-auto leading-relaxed">
+          Explore featured events, find what&apos;s happening locally, or browse events across India.
+        </p>
+      </div>
+
+      {/* ── Featured Carousel ── */}
+      {featuredEvents && featuredEvents.length > 0 && (
+        <div className="mb-16">
+          <Carousel
+            className="w-full"
+            plugins={[plugin.current]}
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
+          >
+            <CarouselContent>
+              {featuredEvents.map((event) => (
+                <CarouselItem key={event._id}>
+                  <div
+                    onClick={() => openPopularEvent(event.slug)}
+                    className="relative h-[380px] rounded-3xl overflow-hidden cursor-pointer group shadow-[0_12px_48px_-12px_oklch(0.18_0.02_80_/_0.2)]"
+                  >
+                    {event.coverImage ? (
+                      <Image
+                        src={event.coverImage}
+                        alt={event.title}
+                        fill
+                        className="object-cover group-hover:scale-[1.02] transition-transform duration-700"
+                        priority
+                      />
+                    ) : (
+                      <div className="absolute inset-0" style={{ backgroundColor: event.themeColor }} />
+                    )}
+
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.10_0.01_80_/_0.85)] via-[oklch(0.10_0.01_80_/_0.3)] to-transparent" />
+
+                    <div className="relative h-full flex flex-col justify-end p-8 md:p-10">
+                      {/* Location badge */}
+                      <div className="mb-4">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-[oklch(0.88_0.055_150_/_0.2)] border border-[oklch(0.75_0.09_150_/_0.3)] text-[oklch(0.88_0.055_150)] backdrop-blur-sm">
+                          <MapPin className="w-3 h-3" />
+                          {event.city}, {event.state || event.country}
+                        </span>
+                      </div>
+
+                      <h2 className="font-display text-3xl md:text-4xl text-white mb-2 leading-tight line-clamp-2">
+                        {event.title}
+                      </h2>
+                      <p className="text-sm text-white/75 mb-5 max-w-2xl line-clamp-1 font-light">
+                        {event.description}
+                      </p>
+
+                      <div className="flex items-center gap-5 text-white/70 text-xs font-light">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="w-3.5 h-3.5 text-[oklch(0.80_0.08_150)]" />
+                          {format(event.startDate, "PPP")}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-[oklch(0.80_0.08_150)]" />
+                          {event.registrationCount} registered
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-4 bg-[oklch(0.99_0.006_80_/_0.9)] border-[oklch(0.87_0.025_85)] hover:bg-[oklch(0.97_0.012_85)] text-[oklch(0.35_0.08_155)]" />
+            <CarouselNext className="right-4 bg-[oklch(0.99_0.006_80_/_0.9)] border-[oklch(0.87_0.025_85)] hover:bg-[oklch(0.97_0.012_85)] text-[oklch(0.35_0.08_155)]" />
+          </Carousel>
+        </div>
+      )}
+
+      {/* ── Events Near You ── */}
+      {localEvents && localEvents.length > 0 && (
+        <div className="mb-16">
+          <div className="flex items-end justify-between mb-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.13_152)]" />
+                <span className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.60_0.05_150)] font-medium">
+                  Local
+                </span>
+              </div>
+              <h2 className="font-display text-2xl sm:text-3xl text-[oklch(0.18_0.02_80)]">
+                Events Near You
+              </h2>
+              <p className="text-sm text-[oklch(0.55_0.025_80)] font-light mt-0.5">
+                Happening in {currentUser?.location?.city || "your area"}
+              </p>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewLocalEvents}
+              className="
+                rounded-full gap-2 text-xs font-medium
+                border-[oklch(0.80_0.06_150_/_0.5)]
+                text-[oklch(0.35_0.10_155)]
+                hover:bg-[oklch(0.88_0.055_150)]
+                hover:border-[oklch(0.65_0.09_150)]
+                transition-all duration-200
+              "
+            >
+              View All <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {localEvents.map((event) => (
+              <EventCard
+                key={event._id}
+                event={event}
+                variant="compact"
+                onClick={() => openPopularEvent(event.slug)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Browse by Category ── */}
+      <div className="mb-16">
+        <div className="flex items-center gap-2 mb-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.13_152)]" />
+          <span className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.60_0.05_150)] font-medium">
+            Categories
+          </span>
+        </div>
+        <h2 className="font-display text-2xl sm:text-3xl text-[oklch(0.18_0.02_80)] mb-6">
+          Browse by Category
+        </h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {categoriesWithCounts.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryClick(category.id)}
+              className="
+                group text-left p-4 sm:p-5 rounded-2xl
+                bg-[oklch(0.99_0.006_80)] border border-[oklch(0.87_0.025_85_/_0.5)]
+                hover:border-[oklch(0.75_0.09_150_/_0.5)]
+                hover:shadow-[0_6px_24px_-8px_oklch(0.45_0.13_155_/_0.18)]
+                hover:bg-[oklch(0.97_0.012_85)]
+                transition-all duration-250
+              "
+            >
+              <div className="text-3xl mb-3">{category.icon}</div>
+              <h3 className="font-medium text-sm text-[oklch(0.18_0.02_80)] group-hover:text-[oklch(0.38_0.13_155)] transition-colors mb-0.5">
+                {category.label}
+              </h3>
+              <p className="text-xs text-[oklch(0.60_0.025_80)] font-light">
+                {category.count} event{category.count !== 1 ? "s" : ""}
+              </p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Popular Across India ── */}
+      {popularEvents && popularEvents.length > 0 && (
+        <div id="popular" className="mb-16">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.13_152)]" />
+            <span className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.60_0.05_150)] font-medium">
+              Trending
+            </span>
+          </div>
+          <h2 className="font-display text-2xl sm:text-3xl text-[oklch(0.18_0.02_80)] mb-1">
+            Popular Across India
+          </h2>
+          <p className="text-sm text-[oklch(0.55_0.025_80)] font-light mb-6">
+            Trending events nationwide
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {popularEvents.map((event) => (
+              <EventCard
+                key={event._id}
+                event={event}
+                variant="list"
+                onClick={() => openPopularEvent(event.slug)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Empty state ── */}
+      {!hasAnyEvents && (
+        <div className="
+          rounded-3xl border-2 border-dashed border-[oklch(0.82_0.045_150)]
+          bg-[oklch(0.97_0.012_85)] p-16 text-center
+        ">
+          <div className="max-w-sm mx-auto space-y-5">
+            <div className="w-16 h-16 rounded-3xl bg-[oklch(0.88_0.055_150)] flex items-center justify-center mx-auto text-3xl">
+              🎉
+            </div>
+            <div>
+              <h2 className="font-display text-2xl text-[oklch(0.18_0.02_80)] mb-2">
+                No events yet
+              </h2>
+              <p className="text-sm text-[oklch(0.55_0.025_80)] font-light leading-relaxed">
+                Be the first to create an event in your area!
+              </p>
+            </div>
+            <Button
+              asChild
+              className="
+                rounded-full px-6
+                bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
+                text-[oklch(0.97_0.01_85)] font-medium
+                shadow-[0_4px_20px_-6px_oklch(0.45_0.13_155_/_0.4)]
+                transition-all duration-200
+              "
+            >
+              <a href="/create-event">Create Event</a>
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
