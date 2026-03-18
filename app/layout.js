@@ -57,18 +57,19 @@ export default function RootLayout({ children }) {
               {/* Header */}
               <Header />
 
-              <main className="relative min-h-screen container mx-auto pt-40 md:pt-32">
+              <main className="relative w-full min-h-screen pt-28 sm:pt-32 md:pt-36">
                 {/* Subtle ambient light — top center */}
                 <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
                   <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[oklch(0.88_0.055_150)] opacity-20 rounded-full blur-[120px]" />
                   <div className="absolute top-1/2 -right-48 w-[500px] h-[500px] bg-[oklch(0.45_0.13_155)] opacity-8 rounded-full blur-[140px]" />
                 </div>
 
-                <div className="relative z-10 min-h-[70vh]">{children}</div>
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 min-h-[70vh]">
+                  {children}
+                </div>
 
                 {/* Footer */}
                 <footer className="mt-24 border-t border-[oklch(0.87_0.025_85_/_0.6)]">
-
                   {/* ── Bottom bar ── */}
                   <div className="border-t border-[oklch(0.87_0.025_85_/_0.6)]">
                     <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">

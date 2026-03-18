@@ -23,7 +23,7 @@ export default function Home() {
           <div className="absolute bottom-0 left-1/3 w-[350px] h-[350px] rounded-full bg-[oklch(0.90_0.025_82)] opacity-40 blur-[90px]" />
         </div>
 
-        <div className="max-w-4xl mx-auto flex flex-col items-center justify-center text-center relative z-10">
+        <div className="w-full max-w-4xl sm:max-w-5xl md:max-w-6xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center relative z-10">
           {/* ── Left: Copy ── */}
           <div className="flex flex-col items-center text-center space-y-8">
             {/* Brand pill */}
@@ -33,7 +33,7 @@ export default function Home() {
             </div>
 
             {/* Headline */}
-            <h1 className="font-display text-5xl sm:text-6xl md:text-7xl leading-[1.0] tracking-tight text-[oklch(0.18_0.02_80)]">
+            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.0] tracking-tight text-[oklch(0.18_0.02_80)]">
               Discover&nbsp;&amp;
               <br />
               create&nbsp;amazing
@@ -48,7 +48,7 @@ export default function Home() {
             </p>
 
             {/* CTA */}
-            <div className="flex items-center gap-4 justify-center flex-wrap">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               <Link href="/explore">
                 <Button
                   size="lg"
@@ -105,7 +105,7 @@ export default function Home() {
 
       {/* ── Feature strip ──────────────────────────────────── */}
       <section className="py-16 border-t border-[oklch(0.87_0.025_85)]">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section label */}
           <p className="text-center text-xs tracking-[0.2em] uppercase text-[oklch(0.60_0.05_150)] mb-12 font-medium">
             Why Spott

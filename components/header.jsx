@@ -30,7 +30,7 @@ export default function Header() {
           backdropFilter: "blur(20px) saturate(1.6)",
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
+<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
 
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
