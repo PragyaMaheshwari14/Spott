@@ -39,7 +39,6 @@ const MyEvents = () => {
 
   if (isAdminLoading || !isAdmin) return null;
 
-  /* ── Loading state ── */
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -54,11 +53,11 @@ const MyEvents = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20 px-4">
+    <div className="min-h-screen pb-20 px-4 sm:px-0">
       <div className="max-w-7xl mx-auto">
 
         {/* ── Page header ── */}
-        <div className="flex items-start justify-between mb-10">
+        <div className="flex items-start justify-between mb-8 sm:mb-10 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[oklch(0.55_0.13_152)]" />
@@ -66,7 +65,7 @@ const MyEvents = () => {
                 Dashboard
               </span>
             </div>
-            <h1 className="font-display text-4xl sm:text-5xl text-[oklch(0.18_0.02_80)] leading-tight">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl text-[oklch(0.18_0.02_80)] leading-tight">
               My Events
             </h1>
             <p className="text-sm text-[oklch(0.55_0.025_80)] font-light mt-1.5">
@@ -75,29 +74,13 @@ const MyEvents = () => {
                 : "Manage your created events"}
             </p>
           </div>
-
-          {/* <Link href="/create-event">
-            <Button
-              className="
-                flex items-center gap-2 rounded-full px-5 py-2.5
-                bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
-                text-[oklch(0.97_0.01_85)] font-medium text-sm
-                shadow-[0_4px_20px_-6px_oklch(0.45_0.13_155_/_0.45)]
-                hover:shadow-[0_6px_28px_-6px_oklch(0.45_0.13_155_/_0.6)]
-                transition-all duration-200
-              "
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Create Event</span>
-            </Button>
-          </Link> */}
         </div>
 
         {/* ── Empty state ── */}
         {events?.length === 0 ? (
           <div className="
             rounded-3xl border-2 border-dashed border-[oklch(0.82_0.045_150)]
-            bg-[oklch(0.97_0.012_85)] p-16 text-center
+            bg-[oklch(0.97_0.012_85)] p-12 sm:p-16 text-center
           ">
             <div className="max-w-sm mx-auto space-y-5">
               <div className="w-16 h-16 rounded-3xl bg-[oklch(0.88_0.055_150)] flex items-center justify-center mx-auto">
@@ -112,15 +95,13 @@ const MyEvents = () => {
                 </p>
               </div>
               <Link href="/create-event">
-                <Button
-                  className="
-                    rounded-full px-6 gap-2
-                    bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
-                    text-[oklch(0.97_0.01_85)] font-medium
-                    shadow-[0_4px_20px_-6px_oklch(0.45_0.13_155_/_0.4)]
-                    transition-all duration-200
-                  "
-                >
+                <Button className="
+                  rounded-full px-6 gap-2 mt-2
+                  bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
+                  text-[oklch(0.97_0.01_85)] font-medium
+                  shadow-[0_4px_20px_-6px_oklch(0.45_0.13_155_/_0.4)]
+                  transition-all duration-200
+                ">
                   <Plus className="w-4 h-4" />
                   Create Your First Event
                 </Button>
@@ -129,7 +110,7 @@ const MyEvents = () => {
           </div>
         ) : (
           /* ── Events grid ── */
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {events?.map((event) => (
               <EventCard
                 key={event._id}

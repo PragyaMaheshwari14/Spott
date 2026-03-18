@@ -14,14 +14,7 @@ export default function Home() {
       {/* ── Hero Section ───────────────────────────────────── */}
       <section className="pb-20 relative overflow-hidden">
         {/* Organic background blobs — Pi-style */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          {/* Large warm beige wash */}
-          <div className="absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full bg-[oklch(0.88_0.055_150)] opacity-30 blur-[120px]" />
-          {/* Forest green glow */}
-          <div className="absolute top-1/4 right-0 w-[400px] h-[400px] rounded-full bg-[oklch(0.45_0.13_155)] opacity-15 blur-[100px]" />
-          {/* Warm sand accent */}
-          <div className="absolute bottom-0 left-1/3 w-[350px] h-[350px] rounded-full bg-[oklch(0.90_0.025_82)] opacity-40 blur-[90px]" />
-        </div>
+       
 
         <div className="w-full max-w-4xl sm:max-w-5xl md:max-w-6xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center relative z-10">
           {/* ── Left: Copy ── */}
@@ -99,7 +92,7 @@ export default function Home() {
         </div>
       </section>
       {/* ── Sticky Card Scroll Section ───────────────── */}
-      <section className="bg-[oklch(0.97_0.01_85)] py-20">
+      <section className="py-16 sm:py-20">
         <Skiper16 />
       </section>
 

@@ -2,12 +2,12 @@
 import { SignInButton, useAuth, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BarLoader } from "react-spinners";
 import { useStoreUser } from "@/hooks/use-store-user";
-import { Building, Plus, Ticket } from "lucide-react";
+import { Building, Menu, Plus, Ticket, X } from "lucide-react";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import OnboardingModal from "./onboarding-modal";
 import SearchLocationBar from "./search-location-bar";
@@ -16,6 +16,7 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 export default function Header() {
   const { isLoading } = useStoreUser();
   const { isAdmin } = useIsAdmin();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } =
     useOnboarding();
@@ -24,49 +25,57 @@ export default function Header() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-20 border-b border-[oklch(0.87_0.025_85_/_0.7)]"
+      <nav
+        className="fixed top-0 left-0 right-0 z-20 border-b border-[oklch(0.87_0.025_85_/_0.4)]"
         style={{
-          background: "oklch(0.97 0.012 85 / 0.85)",
-          backdropFilter: "blur(20px) saturate(1.6)",
+          /* Glass morphism */
+          background: "oklch(0.97 0.012 85 / 0.55)",
+          backdropFilter: "blur(20px) saturate(1.6) brightness(1.04)",
+          WebkitBackdropFilter: "blur(20px) saturate(1.6) brightness(1.04)",
+          boxShadow: "0 1px 0 oklch(0.87 0.025 85 / 0.35), 0 4px 24px -8px oklch(0.45 0.13 155 / 0.08)",
         }}
       >
-<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
+        {/* ── Main bar ── */}
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3">
 
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
             <Image
-              src="/spott.png"
+              src="/spott.jpg"
               alt="Spott logo"
-              width={500}
-              height={500}
-              className="w-auto h-9"
+              width={800}
+              height={800}
+              className="w-auto h-8 sm:h-9"
               priority
             />
           </Link>
 
-          {/* Search bar — desktop */}
-          <div className="hidden md:flex flex-1 justify-center max-w-xl">
+          {/* Search bar — desktop only */}
+          <div className="hidden md:flex flex-1 justify-center max-w-xl mx-auto">
             <SearchLocationBar />
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+
+            {/* Explore link — desktop */}
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="text-[oklch(0.40_0.025_80)] hover:text-[oklch(0.18_0.02_80)] hover:bg-[oklch(0.90_0.025_82)] rounded-full px-4 font-light"
+              className="hidden sm:flex text-[oklch(0.40_0.025_80)] hover:text-[oklch(0.18_0.02_80)] hover:bg-[oklch(0.88_0.055_150_/_0.4)] rounded-full px-4 font-light text-sm transition-all duration-200"
             >
               <Link href="/explore">Explore</Link>
             </Button>
 
             <Authenticated>
+              {/* Create Event — admin only */}
               {isAdmin && (
                 <Button
                   size="sm"
                   asChild
                   className="
-                    flex gap-1.5 rounded-full px-4
+                    flex gap-1.5 rounded-full px-3 sm:px-4
                     bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
                     text-[oklch(0.97_0.01_85)]
                     shadow-[0_2px_12px_-4px_oklch(0.45_0.13_155_/_0.45)]
@@ -75,16 +84,17 @@ export default function Header() {
                 >
                   <Link href="/create-event">
                     <Plus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline text-sm font-medium">Create Event</span>
+                    <span className="hidden sm:inline text-sm font-medium">Create</span>
                   </Link>
                 </Button>
               )}
 
-              <div className="ml-1">
+              <div className="ml-0.5">
                 <UserButton
                   appearance={{
                     elements: {
-                      avatarBox: "w-8 h-8 ring-2 ring-[oklch(0.75_0.09_150_/_0.4)] ring-offset-1 ring-offset-[oklch(0.97_0.012_85)]",
+                      avatarBox:
+                        "w-8 h-8 ring-2 ring-[oklch(0.75_0.09_150_/_0.4)] ring-offset-1 ring-offset-transparent",
                     },
                   }}
                 >
@@ -112,7 +122,7 @@ export default function Header() {
                 <Button
                   size="sm"
                   className="
-                    rounded-full px-5
+                    rounded-full px-4 sm:px-5
                     bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
                     text-[oklch(0.97_0.01_85)] font-medium text-sm
                     shadow-[0_2px_12px_-4px_oklch(0.45_0.13_155_/_0.4)]
@@ -126,12 +136,14 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile search */}
-        <div className="md:hidden border-t border-[oklch(0.87_0.025_85_/_0.5)] px-4 py-2.5">
+        {/* ── Mobile search bar ── */}
+        <div
+          className="md:hidden border-t border-[oklch(0.87_0.025_85_/_0.35)] px-4 py-2.5"
+        >
           <SearchLocationBar />
         </div>
 
-        {/* Loading bar */}
+        {/* ── Loading bar ── */}
         {isLoading && (
           <div className="absolute bottom-0 left-0 w-full">
             <BarLoader width="100%" color="oklch(0.55 0.13 152)" />

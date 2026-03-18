@@ -40,7 +40,7 @@ const AttendeeCard = ({ registration }) => {
         rounded-2xl overflow-hidden
       "
     >
-      <CardContent className="p-4 flex items-start gap-4">
+      <CardContent className="p-3 sm:p-4 flex items-start gap-3">
 
         {/* Status icon */}
         <div
@@ -53,14 +53,14 @@ const AttendeeCard = ({ registration }) => {
           `}
         >
           {checkedIn
-            ? <CheckCircle className="w-4.5 h-4.5" />
-            : <Circle className="w-4.5 h-4.5" />
+            ? <CheckCircle className="w-4 h-4" />
+            : <Circle className="w-4 h-4" />
           }
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <h3 className="font-medium text-sm text-[oklch(0.18_0.02_80)] truncate">
               {registration.attendeeName}
             </h3>
@@ -74,17 +74,17 @@ const AttendeeCard = ({ registration }) => {
             )}
           </div>
 
-          <p className="text-xs text-[oklch(0.55_0.025_80)] font-light mb-2 truncate">
+          <p className="text-xs text-[oklch(0.55_0.025_80)] font-light mb-1.5 truncate">
             {registration.attendeeEmail}
           </p>
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[oklch(0.62_0.025_80)] font-light">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-[oklch(0.62_0.025_80)] font-light">
             <span>
               {checkedIn
                 ? `✓ ${format(registration.checkedInAt, "PPp")}`
                 : `Registered ${format(registration.registeredAt, "PPp")}`}
             </span>
-            <span className="font-mono text-[oklch(0.65_0.04_150)] tracking-tight">
+            <span className="font-mono text-[oklch(0.65_0.04_150)] tracking-tight hidden sm:inline">
               {registration.qrCode}
             </span>
           </div>
@@ -109,7 +109,7 @@ const AttendeeCard = ({ registration }) => {
             ) : (
               <>
                 <CheckCircle className="w-3.5 h-3.5" />
-                Check In
+                <span className="hidden xs:inline">Check In</span>
               </>
             )}
           </Button>
