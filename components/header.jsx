@@ -26,26 +26,26 @@ export default function Header() {
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-20 border-b border-[oklch(0.87_0.025_85_/_0.4)]"
+        className="fixed top-0 left-0 right-0 z-20 border-b border-[oklch(0.87_0.025_85_/_0.4)] overflow-hidden"
         style={{
-          /* Glass morphism */
           background: "oklch(0.97 0.012 85 / 0.55)",
           backdropFilter: "blur(20px) saturate(1.6) brightness(1.04)",
           WebkitBackdropFilter: "blur(20px) saturate(1.6) brightness(1.04)",
-          boxShadow: "0 1px 0 oklch(0.87 0.025 85 / 0.35), 0 4px 24px -8px oklch(0.45 0.13 155 / 0.08)",
+          boxShadow:
+            "0 1px 0 oklch(0.87 0.025 85 / 0.35), 0 4px 24px -8px oklch(0.45 0.13 155 / 0.08)",
         }}
       >
         {/* ── Main bar ── */}
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-3">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center gap-2">
 
-          {/* Logo */}
+          {/* Logo — smaller on mobile to prevent overflow */}
           <Link href="/" className="flex items-center shrink-0">
             <Image
               src="/spott.jpg"
               alt="Spott logo"
               width={800}
               height={800}
-              className="w-auto h-8 sm:h-9"
+              className="w-auto h-12 sm:h-14 md:h-16"
               priority
             />
           </Link>
@@ -55,10 +55,13 @@ export default function Header() {
             <SearchLocationBar />
           </div>
 
-          {/* Right actions */}
-          <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+          {/* Spacer on mobile to push actions to the right */}
+          <div className="flex-1 md:hidden" />
 
-            {/* Explore link — desktop */}
+          {/* Right actions */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+
+            {/* Explore link — desktop only */}
             <Button
               variant="ghost"
               size="sm"
@@ -122,11 +125,11 @@ export default function Header() {
                 <Button
                   size="sm"
                   className="
-                    rounded-full px-4 sm:px-5
+                    rounded-full px-3 sm:px-5
                     bg-[oklch(0.45_0.13_155)] hover:bg-[oklch(0.40_0.13_155)]
                     text-[oklch(0.97_0.01_85)] font-medium text-sm
                     shadow-[0_2px_12px_-4px_oklch(0.45_0.13_155_/_0.4)]
-                    transition-all duration-200
+                    transition-all duration-200 whitespace-nowrap
                   "
                 >
                   Sign In
@@ -137,9 +140,7 @@ export default function Header() {
         </div>
 
         {/* ── Mobile search bar ── */}
-        <div
-          className="md:hidden border-t border-[oklch(0.87_0.025_85_/_0.35)] px-4 py-2.5"
-        >
+        <div className="md:hidden border-t border-[oklch(0.87_0.025_85_/_0.35)] px-4 py-2.5">
           <SearchLocationBar />
         </div>
 
