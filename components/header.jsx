@@ -45,7 +45,7 @@ export default function Header() {
               alt="Spott logo"
               width={800}
               height={800}
-              className="h-8 w-auto"
+              className="h-25 sm:h-22 w-auto"
               priority
             />
           </Link>
