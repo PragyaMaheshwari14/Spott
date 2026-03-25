@@ -43,9 +43,9 @@ export default function Header() {
             <Image
               src="/spott.jpg"
               alt="Spott logo"
-              width={800}
-              height={800}
-              className="h-25 sm:h-22 w-auto"
+              width={900}
+              height={900}
+               className="w-auto h-14 sm:h-12 md:h-16"
               priority
             />
           </Link>
