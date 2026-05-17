@@ -14,13 +14,13 @@ The platform uses a real-time backend, so updates like registrations and check-i
 
 ## 🛠 Tech Stack
 
-* **Frontend:** Next.js, React
+* **Frontend:** Next.js
 * **Backend:** Convex (real-time database & APIs)
 * **Authentication:** Clerk
 * **Styling:** Tailwind CSS
 * **AI:** Google Gemini
 * **Other Tools:** Unsplash API, QR code libraries
-* **Deployment:** Vercel + Convex
+* **Deployment:** Vercel 
 
 ---
 
